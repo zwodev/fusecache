@@ -5,6 +5,8 @@ fusecache is a simple application that syncs two directories over a potentially 
 
 This software has been developed for use with the render management software [Royal Render](https://royalrender.de).
 
+WARNING: This tool is currently WIP and should not be used in production yet.
+
 ## Compiling
 ``` g++ -Wall fusecache.c CacheManager.cpp `pkg-config fuse3 --cflags --libs\` -o fusecache ```
 
