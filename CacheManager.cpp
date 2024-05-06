@@ -41,18 +41,16 @@ CacheManager::~CacheManager()
 
 bool CacheManager::canPartFileBeDeleted(const std::string& path) 
 {
-    const char* to = partFilePath(readCacheFilePath(path)).c_str();
-
 	// file is not cached yet
-	if (access(to, F_OK) >= 1) {
-		struct stat sb_to;
-		int res_to = lstat(to, &sb_to);
-		if (res_to == -1) {
+	if (access(path.c_str(), F_OK) >= 0) {
+		struct stat sb;
+		int res = lstat(path.c_str(), &sb);
+		if (res == -1) {
 			return true;
 		}
 
 		time_t now = time(0);
-		double diff = difftime(now, sb_to.st_mtim.tv_sec);
+		double diff = difftime(now, sb.st_mtim.tv_sec);
 		
 		// part file has not been updated since > 2 min
 		if (diff > 120.0) {
@@ -65,7 +63,8 @@ bool CacheManager::canPartFileBeDeleted(const std::string& path)
 
 int CacheManager::waitForFile(const char *path) 
 {
-    std::string partPath = partFilePath(path);	
+	
+    std::string partPath = partFilePath(path);
 	if (access(partPath.c_str(), F_OK) >= 0) {
 		float timeout_in_secs = 15.0f * 60.0f;
 		int wait_in_secs = 30;
@@ -74,7 +73,7 @@ int CacheManager::waitForFile(const char *path)
 			if (access(partPath.c_str(), F_OK) == -1) {
 				return 0;
 			}
-			else if (canPartFileBeDeleted(path)) {
+			else if (canPartFileBeDeleted(partPath)) {
 				remove(partPath.c_str());
 				return 0;
 			}
@@ -110,9 +109,8 @@ int msleep(long msec)
 
 int CacheManager::copyFile(const char *from, const char *to)
 {
- 	const float bandwidth = 20.0f;
 	const int BUF_SIZE = 20480;
-	const double goalTime = BUF_SIZE / (1024.0f * 1024.0f * bandwidth);
+	const double goalTime = ((double)BUF_SIZE) / (1024.0f * 1024.0f * m_maxUpBandwidth);
 	
 	clock_t start, end;	
     int fd_to, fd_from;
@@ -340,7 +338,7 @@ void CacheManager::run()
 		else {
 			printf("RSYNC ERROR: %s\n", result.c_str());
 		}
-        sleep(10);
+        sleep(30);
     }
 }
 
@@ -365,7 +363,7 @@ int CacheManager::openFile(const char* filePath, int flags)
 
 	int ret;
     if (!(flags & O_NOATIME)) {
-		ret = waitForFile(origPath.c_str());
+		ret = waitForFile(cachePath.c_str());
 		if (ret == -1) {
 			return -EACCES;
 		}

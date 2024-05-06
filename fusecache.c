@@ -317,7 +317,7 @@ int main(int argc, char *argv[])
 			try
 			{
 				std::string valueString(argv[i+1]);
-				int limitInMBPerSec = std::stoi(valueString);
+				float limitInMBPerSec = std::stof(valueString);
 				cache_manager->setMaxUpBandwidth(limitInMBPerSec);	
 			}
 			catch (...)
@@ -329,7 +329,7 @@ int main(int argc, char *argv[])
 			try
 			{
 				std::string valueString(argv[i+1]);
-				int limitInMBPerSec = std::stoi(valueString);
+				float limitInMBPerSec = std::stof(valueString);
 				cache_manager->setMaxDownBandwidth(limitInMBPerSec);	
 			}
 			catch (...)
