@@ -1,9 +1,9 @@
 # fusecache
 
 ## About
-fusecache is a simple application that syncs two directories over a potentially slow internet connection. It is based on libfuse. It has seperate read and write caches. The read cache is only filled on demand. The write cache is synced back using rsync. Bandwitdth limits can be set individually for up- and downstream channels.
+fusecache is a simple application that syncs two directories over a potentially slow internet connection. It is based on libfuse. It has seperate read and write caches. The read cache is only filled on demand. The write cache is synced back using rsync. Bandwidth limits can be set individually for up- and downstream channels.
 
-This software has been developed for use with the render management software [Royal Render](https://http://www.royalrender.de).
+This software has been developed for use with the render management software [Royal Render](https://royalrender.de).
 
 ## Compiling
 ``` g++ -Wall fusecache.c CacheManager.cpp `pkg-config fuse3 --cflags --libs\` -o fusecache ```
