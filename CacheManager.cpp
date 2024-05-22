@@ -330,13 +330,13 @@ void CacheManager::createDirectories()
 
 void CacheManager::run()
 {
-    std::string rsyncCommand = "rsync -av ";
+    std::string rsyncCommand = "rsync -auv ";
 	if (m_maxDownBandwidth > 0) {
 		int maxDown = (int)(m_maxDownBandwidth * 1024.0f);
 		rsyncCommand += "--bwlimit=" + std::to_string(maxDown);
 	}
 	rsyncCommand += " ";
-	rsyncCommand += "--update --exclude='*.part'";
+	rsyncCommand += "--exclude='*.part'";
 	rsyncCommand += " ";
 	rsyncCommand += writeCacheDir() + "/";
 	rsyncCommand += " ";
