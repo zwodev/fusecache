@@ -358,7 +358,7 @@ int main(int argc, char *argv[])
 	getcwd(path, 512);
 	cache_manager->setRootPath(std::string(path) + "/orig");
 	cache_manager->setReadCacheDir(std::string(path) + "/cache/read");
-	cache_manager->setWriteCacheDir(std::string(path) + "/cache/write");
+	cache_manager->setWriteCacheDir(std::string(path) + "/cache/read");
 	cache_manager->setMountPoint(std::string(path) + "/mnt");
 	cache_manager->createDirectories();
 	cache_manager->start();
