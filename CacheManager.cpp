@@ -408,6 +408,7 @@ int CacheManager::createFile(const char* filePath, mode_t mode, int flags)
     std::string cachePath = writeCacheFilePath(filePath);
     std::string dir = std::filesystem::path(filePath).parent_path().u8string();
 	std::filesystem::create_directories(dir);
+	printf("create dirs: %s\n", dir.c_str());
 
 	int res = open(cachePath.c_str(), flags, mode);
 	if (res == -1)
