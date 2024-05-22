@@ -125,7 +125,19 @@ int CacheManager::copyFile(const char *from, const char *to)
 
     std::string toPart = partFilePath(to);
     std::string dir = std::filesystem::path(toPart).parent_path().u8string();
-	std::filesystem::create_directories(dir);
+	try {
+		std::filesystem::create_directories(dir);
+	}
+    catch (const std::filesystem::filesystem_error& err)
+    {
+        printf("Error creating dirs: %s\n", dir.c_str());
+        printf("Exception: %s\n", err.what());
+    }
+    catch (const std::exception& ex)
+    {
+        printf("Error creating dirs: %s\n", dir.c_str());
+        printf("Exception: Unknown");
+    }
 
     fd_to = open(toPart.c_str(), O_WRONLY | O_CREAT | O_EXCL, 0666);
     if (fd_to < 0)
@@ -407,8 +419,20 @@ int CacheManager::createFile(const char* filePath, mode_t mode, int flags)
 {   
     std::string cachePath = writeCacheFilePath(filePath);
     std::string dir = std::filesystem::path(filePath).parent_path().u8string();
-	std::filesystem::create_directories(dir);
-	printf("create dirs: %s\n", dir.c_str());
+	
+	try {
+		std::filesystem::create_directories(dir);
+	}
+    catch (const std::filesystem::filesystem_error& err)
+    {
+        printf("Error creating dirs: %s\n", dir.c_str());
+        printf("Exception: %s\n", err.what());
+    }
+    catch (const std::exception& ex)
+    {
+        printf("Error creating dirs: %s\n", dir.c_str());
+        printf("Exception: Unknown");
+    }
 
 	int res = open(cachePath.c_str(), flags, mode);
 	if (res == -1)
