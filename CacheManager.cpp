@@ -418,7 +418,7 @@ int CacheManager::readFile(int vfh, char* buf, size_t size, off_t offset)
 int CacheManager::createFile(const char* filePath, mode_t mode, int flags)
 {   
     std::string cachePath = writeCacheFilePath(filePath);
-    std::string dir = std::filesystem::path(filePath).parent_path().u8string();
+    std::string dir = std::filesystem::path(cachePath).parent_path().u8string();
 	
 	try {
 		std::filesystem::create_directories(dir);
