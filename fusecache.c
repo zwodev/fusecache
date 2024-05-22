@@ -188,8 +188,15 @@ static int fc_create(const char *path, mode_t mode, struct fuse_file_info *fi)
 {
 	printf("fc_create: %s\n", path);
 	
-	std::string cache_path = cache_manager->writeCacheFilePath(path);
-	int res = open(cache_path.c_str(), fi->flags, mode);
+	// std::string cache_path = cache_manager->writeCacheFilePath(path);
+	// int res = open(cache_path.c_str(), fi->flags, mode);
+	
+	// if (res < 0) {
+	//  	return res;
+	// }
+
+	int res = cache_manager->createFile(path, mode, fi->flags);
+	printf("fc_create: %i \n", res);
 	
 	if (res < 0) {
 	 	return res;

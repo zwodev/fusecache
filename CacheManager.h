@@ -40,6 +40,7 @@ public:
     int openFile(const char* filePath, int flags);
     int closeFile(int id);
     int readFile(int id, char* buf, size_t size, off_t offset);
+    int createFile(const char* filePath, mode_t mode, int flags);
     int writeFile(int id, const char* buf, size_t size, off_t offset);
 
     std::string origFilePath(const std::string& filePath);

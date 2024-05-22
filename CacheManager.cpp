@@ -403,6 +403,19 @@ int CacheManager::readFile(int vfh, char* buf, size_t size, off_t offset)
 	return res;
 }
 
+int CacheManager::createFile(const char* filePath, mode_t mode, int flags)
+{   
+    std::string cachePath = writeCacheFilePath(filePath);
+    std::string dir = std::filesystem::path(filePath).parent_path().u8string();
+	std::filesystem::create_directories(dir);
+
+	int res = open(cachePath.c_str(), flags, mode);
+	if (res == -1)
+		res = -errno;
+
+	return res;
+}
+
 int CacheManager::writeFile(int vfh, const char* buf, size_t size, off_t offset)
 {
 	int res = pwrite(vfh, buf, size, offset);
