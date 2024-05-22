@@ -256,12 +256,13 @@ int CacheManager::copyFileOnDemand(const char *from, const char *to)
 		int res_from = lstat(from, &sb_from);
 		int res_to = lstat(to, &sb_to);
 		if (res_from == -1 || res_to == -1) {
+			printf("Result Stat -> From: %i To: %i\n", res_from, res_to);
 			m_isCopying = false;
 			return -1;
 		}
 
 		float diff = difftime(sb_to.st_mtim.tv_sec, sb_from.st_mtim.tv_sec);
-		
+		printf("Time Diff: %g \n", diff);
 		// is origin file newer or has different file size
 		if (diff < 0 || (sb_from.st_size != sb_to.st_size)) {
 			needs_copy = true;
@@ -335,7 +336,7 @@ void CacheManager::run()
 		rsyncCommand += "--bwlimit=" + std::to_string(maxDown);
 	}
 	rsyncCommand += " ";
-	rsyncCommand += "--exclude='*.part'";
+	rsyncCommand += "--update --exclude='*.part'";
 	rsyncCommand += " ";
 	rsyncCommand += writeCacheDir() + "/";
 	rsyncCommand += " ";
