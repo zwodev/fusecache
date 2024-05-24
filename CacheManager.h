@@ -15,11 +15,13 @@
 #include <vector>
 #include <list>
 
+#include "Log.h"
+
 class CacheManager
 {
     
 public:
-    CacheManager();
+    CacheManager(Log* log);
     ~CacheManager();
 
 private:
@@ -61,6 +63,7 @@ public:
     void setMaxDownBandwidth(float mbPerSecond);
 
 private:
+    Log* m_log = nullptr;
     std::mutex m_copyMutex;
     std::thread m_syncThread;
     bool m_isRunning = false;

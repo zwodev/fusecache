@@ -23,11 +23,14 @@
 #include <errno.h>
 #include <sys/time.h>
 
+#include "Helper.h"
+#include "Log.h"
 #include "CacheManager.h"
 
 static fuse_fill_dir_flags fill_dir_plus = (fuse_fill_dir_flags ) 0;
 
 CacheManager* cache_manager = nullptr;
+Log* g_log = nullptr;
 
 static void *fc_init(struct fuse_conn_info *conn,
 		      struct fuse_config *cfg)
@@ -62,9 +65,9 @@ static int fc_getattr(const char *path, struct stat *stbuf,
 
 static int fc_access(const char *path, int mask)
 {
-	printf("fc_access: %s\n", path);
+	g_log->debug(formatStr("fc_access: %s\n", path));
+	
 	int res;
-
 	std::string orig_path = cache_manager->origFilePath(path);
 	res = access(orig_path.c_str(), mask);
 	if (res == -1) {
@@ -82,7 +85,8 @@ static int fc_readdir(const char *path, void *buf, fuse_fill_dir_t filler,
 		       off_t offset, struct fuse_file_info *fi,
 		       enum fuse_readdir_flags flags)
 {
-	printf("fc_readdir: %s\n", path);
+	g_log->debug(formatStr("fc_readdir: %s\n", path));
+
 	DIR *dp;
 	struct dirent *de;
 
@@ -111,8 +115,8 @@ static int fc_readdir(const char *path, void *buf, fuse_fill_dir_t filler,
 
 static int fc_mkdir(const char *path, mode_t mode)
 {
-	printf("fc_mkdir: %s\n", path);
-	
+	g_log->debug(formatStr("fc_mkdir: %s\n", path));
+
 	std::string cache_path = cache_manager->writeCacheFilePath(path);
 	int res = mkdir(cache_path.c_str(), mode);
 	if (res == -1)
@@ -123,7 +127,8 @@ static int fc_mkdir(const char *path, mode_t mode)
 
 static int fc_unlink(const char *path)
 {
-	printf("fc_unlink: %s\n", path);
+	g_log->debug(formatStr("fc_unlink: %s\n", path));
+
 	int res = unlink(cache_manager->writeCacheFilePath(path).c_str());
 	if (res == -1)
 		return -errno;
@@ -133,9 +138,9 @@ static int fc_unlink(const char *path)
 
 static int fc_rmdir(const char *path)
 {
-	printf("fc_rmdir: %s\n", path);
+	g_log->debug(formatStr("fc_rmdir: %s\n", path));
+	
 	int res;
-
 	std::string orig_path = cache_manager->origFilePath(path);
 	res = rmdir(orig_path.c_str());
 	if (res == -1)
@@ -186,17 +191,9 @@ static int fc_chown(const char *path, uid_t uid, gid_t gid, struct fuse_file_inf
 
 static int fc_create(const char *path, mode_t mode, struct fuse_file_info *fi)
 {
-	printf("fc_create: %s\n", path);
+	g_log->debug(formatStr("fc_create: %s\n", path));
 	
-	// std::string cache_path = cache_manager->writeCacheFilePath(path);
-	// int res = open(cache_path.c_str(), fi->flags, mode);
-	
-	// if (res < 0) {
-	//  	return res;
-	// }
-
 	int res = cache_manager->createFile(path, mode, fi->flags);
-	printf("fc_create: %i \n", res);
 	
 	if (res < 0) {
 	 	return res;
@@ -208,9 +205,9 @@ static int fc_create(const char *path, mode_t mode, struct fuse_file_info *fi)
 
 static int fc_open(const char *path, struct fuse_file_info *fi)
 {
+	g_log->debug(formatStr("fc_open: %s\n", path));
+
 	int res = cache_manager->openFile(path, fi->flags);
-	printf("fc_open: %i \n", res);
-	
 	if (res < 0) {
 	 	return res;
 	}
@@ -222,7 +219,6 @@ static int fc_open(const char *path, struct fuse_file_info *fi)
 
 static int fc_read(const char *path, char *buf, size_t size, off_t offset, struct fuse_file_info *fi)
 {
-	//printf("fc_read: %zu \n", offset);
 	int res = cache_manager->readFile(fi->fh, buf, size, offset);
 
 	return res;
@@ -230,7 +226,6 @@ static int fc_read(const char *path, char *buf, size_t size, off_t offset, struc
 
 static int fc_write(const char *path, const char *buf, size_t size, off_t offset, struct fuse_file_info *fi)
 {
-	//printf("fc_write: %zu \n", offset);
 	int res = cache_manager->writeFile(fi->fh, buf, size, offset);
 	
 	return res;
@@ -250,7 +245,7 @@ static int fc_statfs(const char *path, struct statvfs *stbuf)
 
 static int fc_release(const char *path, struct fuse_file_info *fi)
 {
-	printf("fc_release: %s \n", path);
+	g_log->debug(formatStr("fc_release: %s\n", path));
 
 	(void) path;
 	
@@ -304,7 +299,16 @@ static void assign_operations(fuse_operations &op) {
 
 int main(int argc, char *argv[])
 {
-	cache_manager = new CacheManager();
+	char path[512];
+	getcwd(path, 512);
+
+	std::string rootPath = std::string(path) + "/orig";
+	std::string readCacheDir = std::string(path) + "/cache";
+	std::string writeCacheDir = std::string(path) + "/orig";
+	std::string mountPoint = std::string(path) + "/mnt";
+
+	Log* g_log = new Log(rootPath + "/fusecache.log");
+	cache_manager = new CacheManager(g_log);
 	if (!cache_manager->checkDependencies()) {
 		delete cache_manager;
 		return -1;
@@ -354,16 +358,16 @@ int main(int argc, char *argv[])
 	new_argv[4] = (char*)"./mnt";
 	new_argc = 5;
 	
-	char path[512];
-	getcwd(path, 512);
-	cache_manager->setRootPath(std::string(path) + "/orig");
-	cache_manager->setReadCacheDir(std::string(path) + "/cache/read");
-	cache_manager->setWriteCacheDir(std::string(path) + "/cache/read");
-	cache_manager->setMountPoint(std::string(path) + "/mnt");
+	
+	cache_manager->setRootPath(rootPath);
+	cache_manager->setReadCacheDir(readCacheDir);
+	cache_manager->setWriteCacheDir(writeCacheDir);
+	cache_manager->setMountPoint(mountPoint);
 	cache_manager->createDirectories();
 	cache_manager->start();
 
 	int ret = fuse_main(new_argc, new_argv, &fc_oper, NULL);
 	delete cache_manager;
+	delete g_log;
 	return  ret;
 }

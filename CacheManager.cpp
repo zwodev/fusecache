@@ -6,7 +6,6 @@
  * for full license details.
  */
 
-#include "CacheManager.h"
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -17,6 +16,9 @@
 #include <unistd.h>
 #include <algorithm>
 #include <filesystem>
+
+#include "Helper.h"
+#include "CacheManager.h"
 
 bool exec(std::string cmd, std::string& result) {
     std::array<char, 128> buffer;
@@ -30,8 +32,9 @@ bool exec(std::string cmd, std::string& result) {
     return true;
 }
 
-CacheManager::CacheManager()
+CacheManager::CacheManager(Log* log)
 {
+	m_log = log;
 }
 
 CacheManager::~CacheManager()
@@ -130,13 +133,11 @@ int CacheManager::copyFile(const char *from, const char *to)
 	}
     catch (const std::filesystem::filesystem_error& err)
     {
-        printf("Error creating dirs: %s\n", dir.c_str());
-        printf("Exception: %s\n", err.what());
+		m_log->error(formatStr("Error creating dirs: %s\nException: %s", dir, err.what()));
     }
     catch (const std::exception& ex)
     {
-        printf("Error creating dirs: %s\n", dir.c_str());
-        printf("Exception: Unknown");
+		m_log->error(formatStr("Error creating dirs: %s\nException: Unknown", dir));
     }
 
     fd_to = open(toPart.c_str(), O_WRONLY | O_CREAT | O_EXCL, 0666);
@@ -186,7 +187,7 @@ int CacheManager::copyFile(const char *from, const char *to)
         }
         close(fd_from);
 
-		printf("COPY SUCCESS - rename part file: %s\n", toPart.c_str());
+		m_log->debug(formatStr("COPY SUCCESS - rename part file: %s", toPart.c_str()));
 		rename(toPart.c_str(), to);
         return 0;
     }
@@ -199,7 +200,7 @@ int CacheManager::copyFile(const char *from, const char *to)
         close(fd_to);
 	}
 
-	printf("COPY ERROR - delete part file: %s\n", toPart.c_str());
+	m_log->error(formatStr("COPY ERROR - delete part file: %s", toPart.c_str()));
     errno = saved_errno;
     return -1;
 }
@@ -256,13 +257,13 @@ int CacheManager::copyFileOnDemand(const char *from, const char *to)
 		int res_from = lstat(from, &sb_from);
 		int res_to = lstat(to, &sb_to);
 		if (res_from == -1 || res_to == -1) {
-			printf("Result Stat -> From: %i To: %i\n", res_from, res_to);
+			m_log->debug(formatStr("Result Stat - From: %i To: %i", res_from, res_to));
 			m_isCopying = false;
 			return -1;
 		}
 
 		float diff = difftime(sb_to.st_mtim.tv_sec, sb_from.st_mtim.tv_sec);
-		printf("Time Diff: %g \n", diff);
+		m_log->debug(formatStr("Time Diff: %g \n", diff));
 		// is origin file newer or has different file size
 		if (diff < 0 || (sb_from.st_size != sb_to.st_size)) {
 			needs_copy = true;
@@ -271,7 +272,7 @@ int CacheManager::copyFileOnDemand(const char *from, const char *to)
 	}
 
 	if (needs_copy) {
-		printf("COPYING file from: %s to: %s\n", from, to);
+		m_log->debug(formatStr("COPYING file from: %s to: %s", from, to));
 		res = copyFile(from, to);
 		if (access(to, F_OK) >= 0) {
 			struct stat sb_from;
@@ -306,7 +307,7 @@ bool CacheManager::checkDependencies()
 	std::string rsyncCommand = "rsync -V";
 	std::string result;
 	if (!exec(rsyncCommand, result)) {
-		printf("ERROR - RSYNC not installed. \n");
+		m_log->debug("ERROR - RSYNC not installed.");
 		return false;
 	}
 
@@ -344,12 +345,13 @@ void CacheManager::run()
 
 	while(m_isRunning) {
 		std::string result;
-		printf("RSYNC CMD: %s\n", rsyncCommand.c_str()); 
+		m_log->info(formatStr("RSYNC CMD: %s", rsyncCommand));
+		
 		if (exec(rsyncCommand, result)) {
-			printf("RSYNC SUCCESS: %s\n", result.c_str());
+			m_log->info(formatStr("RSYNC CMD: %s", result));
 		}
 		else {
-			printf("RSYNC ERROR: %s\n", result.c_str());
+			m_log->error(formatStr("RSYNC ERROR:: %s", result));
 		}
         sleep(30);
     }
@@ -372,8 +374,6 @@ int CacheManager::openFile(const char* filePath, int flags)
     std::string origPath = origFilePath(filePath);
     std::string cachePath = readCacheFilePath(filePath);
     
-	//printf("Flags: %i", flags);
-
 	int ret;
     if (!(flags & O_NOATIME)) {
 		ret = waitForFile(cachePath.c_str());
@@ -426,13 +426,11 @@ int CacheManager::createFile(const char* filePath, mode_t mode, int flags)
 	}
     catch (const std::filesystem::filesystem_error& err)
     {
-        printf("Error creating dirs: %s\n", dir.c_str());
-        printf("Exception: %s\n", err.what());
+		m_log->error(formatStr("Error creating dirs: %s\nException: %s", dir, err.what()));
     }
     catch (const std::exception& ex)
     {
-        printf("Error creating dirs: %s\n", dir.c_str());
-        printf("Exception: Unknown");
+        m_log->error(formatStr("Error creating dirs: %s\nException: Unknown", dir));
     }
 
 	int res = open(cachePath.c_str(), flags, mode);
