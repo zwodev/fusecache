@@ -345,13 +345,13 @@ void CacheManager::run()
 
 	while(m_isRunning) {
 		std::string result;
-		m_log->info(formatStr("RSYNC CMD: %s", rsyncCommand));
+		m_log->info(formatStr("RSYNC CMD: %s", rsyncCommand.c_str()));
 		
 		if (exec(rsyncCommand, result)) {
-			m_log->info(formatStr("RSYNC CMD: %s", result));
+			m_log->info("RSYNC SUCCESS");
 		}
 		else {
-			m_log->error(formatStr("RSYNC ERROR:: %s", result));
+			m_log->error(formatStr("RSYNC ERROR: %s", result.c_str()));
 		}
         sleep(30);
     }
