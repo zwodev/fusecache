@@ -231,7 +231,7 @@ static int fc_read(const char *path, char *buf, size_t size, off_t offset, struc
 static int fc_write(const char *path, const char *buf, size_t size, off_t offset, struct fuse_file_info *fi)
 {
 	int res = cache_manager->writeFile(fi->fh, buf, size, offset);
-	
+	g_log->debug(formatStr("fc_write: %d", res));
 	return res;
 }
 
