@@ -211,6 +211,7 @@ static int fc_open(const char *path, struct fuse_file_info *fi)
 
 	int res = cache_manager->openFile(path, fi->flags);
 	if (res < 0) {
+		g_log->debug("ERROR OPENING FILE - FLAGS: %d", fi->flags);
 	 	return res;
 	}
 
