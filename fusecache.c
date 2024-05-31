@@ -221,7 +221,7 @@ static int fc_open(const char *path, struct fuse_file_info *fi)
 
 static int fc_read(const char *path, char *buf, size_t size, off_t offset, struct fuse_file_info *fi)
 {
-	g_log->debug(formatStr("fc_read: %s", path));
+	//g_log->debug(formatStr("fc_read: %s", path));
 	int res = cache_manager->readFile(fi->fh, buf, size, offset);
 
 	return res;
