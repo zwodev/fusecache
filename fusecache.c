@@ -222,7 +222,6 @@ static int fc_open(const char *path, struct fuse_file_info *fi)
 
 static int fc_read(const char *path, char *buf, size_t size, off_t offset, struct fuse_file_info *fi)
 {
-	//g_log->debug(formatStr("fc_read: %s", path));
 	int res = cache_manager->readFile(fi->fh, buf, size, offset);
 
 	return res;
@@ -231,7 +230,6 @@ static int fc_read(const char *path, char *buf, size_t size, off_t offset, struc
 static int fc_write(const char *path, const char *buf, size_t size, off_t offset, struct fuse_file_info *fi)
 {
 	int res = cache_manager->writeFile(fi->fh, buf, size, offset);
-	g_log->debug(formatStr("fc_write: %d", res));
 	return res;
 }
 
@@ -287,7 +285,18 @@ static int fc_truncate(const char *path, off_t size,
                         struct fuse_file_info *fi)
 {
 	g_log->debug(formatStr("fc_truncate: %s", path));
+	
+	std::string cache_path = cache_manager->writeCacheFilePath(path);
+
+	int res;
+	if (fi != NULL)
+		res = ftruncate(fi->fh, size);
+	else
+		res = truncate(cache_path.c_str(), size);
+	if (res == -1)
+		return -errno;
  
+
     return 0;
 }
 
