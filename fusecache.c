@@ -283,6 +283,25 @@ static off_t fc_lseek(const char *path, off_t off, int whence, struct fuse_file_
 	return res;
 }
 
+static int fc_truncate(const char *path, off_t size,
+                        struct fuse_file_info *fi)
+{
+	g_log->debug(formatStr("fc_truncate: %s", path));
+ 
+    return 0;
+}
+
+static int fc_fsync(const char *path, int isdatasync,
+                     struct fuse_file_info *fi)
+{
+	g_log->debug(formatStr("fc_sync: %s", path));
+
+	(void) path;
+	(void) isdatasync;
+	(void) fi;
+	return 0;
+}
+
 static void assign_operations(fuse_operations &op) {
 	op.init     = fc_init;
 	op.getattr	= fc_getattr;
@@ -301,6 +320,8 @@ static void assign_operations(fuse_operations &op) {
 	op.statfs	= fc_statfs;
 	op.release	= fc_release;
 	op.lseek	= fc_lseek;
+	op.truncate = fc_truncate;
+	op.fsync	= fc_fsync;
 }
 
 int main(int argc, char *argv[])
