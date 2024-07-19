@@ -359,7 +359,32 @@ int main(int argc, char *argv[])
 				continue;
 			}
 		}
-		else if (strcmp(argv[i], "-readcacheonly") == 0) {
+	}
+
+	char path[512];
+	getcwd(path, 512);
+
+	if (!name.empty()) {
+		name = "/" + name;
+		std::string subPath = std::string(path) + name;
+		std::string dir = std::filesystem::path(subPath).u8string();
+		std::filesystem::create_directories(dir);
+	}
+
+	std::string rootPath = std::string(path) + name + "/orig";
+	std::string readCacheDir = std::string(path) + name + "/cache";
+	std::string writeCacheDir = std::string(path) + name + "/cache";
+	std::string mountPoint = std::string(path) + name + "/mnt";
+
+	g_log = new Log(writeCacheDir + "/fusecache.log");
+	cache_manager = new CacheManager(g_log);
+	if (!cache_manager->checkDependencies()) {
+		delete cache_manager;
+		return -1;
+	}
+
+	for (int i = 1; i < argc; ++i) {
+		if (strcmp(argv[i], "-readcacheonly") == 0) {
 			try
 			{
 				cache_manager->setReadCacheOnly(true);	
@@ -393,28 +418,6 @@ int main(int argc, char *argv[])
 				continue;
 			}
 		}
-	}
-
-	char path[512];
-	getcwd(path, 512);
-
-	if (!name.empty()) {
-		name = "/" + name;
-		std::string subPath = std::string(path) + name;
-		std::string dir = std::filesystem::path(subPath).u8string();
-		std::filesystem::create_directories(dir);
-	}
-
-	std::string rootPath = std::string(path) + name + "/orig";
-	std::string readCacheDir = std::string(path) + name + "/cache";
-	std::string writeCacheDir = std::string(path) + name + "/cache";
-	std::string mountPoint = std::string(path) + name + "/mnt";
-
-	g_log = new Log(writeCacheDir + "/fusecache.log");
-	cache_manager = new CacheManager(g_log);
-	if (!cache_manager->checkDependencies()) {
-		delete cache_manager;
-		return -1;
 	}
 
 	cache_manager->setRootPath(rootPath);
