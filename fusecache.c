@@ -432,7 +432,7 @@ int main(int argc, char *argv[])
 	new_argv[1] = (char*)"-f";	
 	new_argv[2] = (char*)"-o";	
 	new_argv[3] = (char*)"allow_other";	
-	new_argv[4] = (char*)"./mnt";
+	new_argv[4] = (char*)mountPoint.c_str();
 	new_argc = 5;
 	
 	
