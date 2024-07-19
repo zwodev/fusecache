@@ -23,6 +23,8 @@
 #include <errno.h>
 #include <sys/time.h>
 
+#include <filesystem>
+
 #include "Helper.h"
 #include "Log.h"
 #include "CacheManager.h"
@@ -398,14 +400,17 @@ int main(int argc, char *argv[])
 
 	if (!name.empty()) {
 		name = "/" + name;
+		std::string subPath = std::string(path) + name;
+		std::string dir = std::filesystem::path(subPath).u8string();
+		std::filesystem::create_directories(dir);
 	}
+
 	std::string rootPath = std::string(path) + name + "/orig";
 	std::string readCacheDir = std::string(path) + name + "/cache";
 	std::string writeCacheDir = std::string(path) + name + "/cache";
 	std::string mountPoint = std::string(path) + name + "/mnt";
 
 	g_log = new Log(writeCacheDir + "/fusecache.log");
-
 	cache_manager = new CacheManager(g_log);
 	if (!cache_manager->checkDependencies()) {
 		delete cache_manager;
