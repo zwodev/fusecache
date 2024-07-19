@@ -397,7 +397,7 @@ int main(int argc, char *argv[])
 	getcwd(path, 512);
 
 	if (!name.empty()) {
-		name += "/" + name;
+		name = "/" + name;
 	}
 	std::string rootPath = std::string(path) + name + "/orig";
 	std::string readCacheDir = std::string(path) + name + "/cache";
