@@ -18,8 +18,9 @@ class Log {
 public:
     Log () {}
 
-    Log(const std::string& filename) 
+    Log(const std::string& filename, bool logToCommandline = false) 
     { 
+        m_logToCommandline = false;
         m_filename = filename;
         m_logFile.open(filename, std::ios::app | std::ios::out); 
         if (!m_logFile.is_open()) { 
@@ -62,7 +63,9 @@ private:
                  << level << ": " << message 
                  << std::endl; 
   
-        std::cout << logEntry.str(); 
+        if (m_logToCommandline) {
+            std::cout << logEntry.str();
+        } 
   
         if (m_logFile.is_open()) { 
             m_logFile << logEntry.str(); 
@@ -74,4 +77,5 @@ private:
 private:
     std::ofstream m_logFile;
     std::string m_filename;
+    bool m_logToCommandline = false;
 };

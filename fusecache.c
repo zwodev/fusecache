@@ -347,12 +347,22 @@ int main(int argc, char *argv[])
 	umask(0);
 
 	std::string name;
-	
+	bool logToCommandline = false;
 	for (int i = 1; i < argc; ++i) {
 		if (strcmp(argv[i], "-name") == 0 && (i+1 < argc)) {
 			try
 			{
 				name = std::string(argv[i+1]);	
+			}
+			catch (...)
+			{
+				continue;
+			}
+		}
+		else if (strcmp(argv[i], "-log") == 0 && (i+1 < argc)) {
+			try
+			{
+				logToCommandline = true;	
 			}
 			catch (...)
 			{
@@ -376,7 +386,19 @@ int main(int argc, char *argv[])
 	std::string writeCacheDir = std::string(path) + name + "/cache";
 	std::string mountPoint = std::string(path) + name + "/mnt";
 
-	g_log = new Log(writeCacheDir + "/fusecache.log");
+	std::string dir = std::filesystem::path(rootPath).u8string();
+	std::filesystem::create_directories(dir);
+
+	dir = std::filesystem::path(readCacheDir).u8string();
+	std::filesystem::create_directories(dir);
+
+	dir = std::filesystem::path(writeCacheDir).u8string();
+	std::filesystem::create_directories(dir);
+
+	dir = std::filesystem::path(mountPoint).u8string();
+	std::filesystem::create_directories(dir);
+
+	g_log = new Log(writeCacheDir + "/fusecache.log", logToCommandline);
 	cache_manager = new CacheManager(g_log);
 	if (!cache_manager->checkDependencies()) {
 		delete cache_manager;
@@ -424,7 +446,7 @@ int main(int argc, char *argv[])
 	cache_manager->setReadCacheDir(readCacheDir);
 	cache_manager->setWriteCacheDir(writeCacheDir);
 	cache_manager->setMountPoint(mountPoint);
-	cache_manager->createDirectories();
+	//cache_manager->createDirectories();
 	cache_manager->start();
 
 	fill_dir_plus = FUSE_FILL_DIR_PLUS;
