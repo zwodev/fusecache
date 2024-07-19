@@ -20,6 +20,7 @@ public:
 
     Log(const std::string& filename) 
     { 
+        m_filename = filename;
         m_logFile.open(filename, std::ios::app | std::ios::out); 
         if (!m_logFile.is_open()) { 
             std::cerr << "Error opening log file." << std::endl; 
@@ -72,4 +73,5 @@ private:
 
 private:
     std::ofstream m_logFile;
+    std::string m_filename;
 };

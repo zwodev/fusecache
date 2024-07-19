@@ -335,29 +335,6 @@ static void assign_operations(fuse_operations &op) {
 
 int main(int argc, char *argv[])
 {
-	char path[512];
-	getcwd(path, 512);
-
-	std::string rootPath = std::string(path) + "/orig";
-	std::string readCacheDir = std::string(path) + "/cache";
-	std::string writeCacheDir = std::string(path) + "/cache";
-	std::string mountPoint = std::string(path) + "/mnt";
-
-	g_log = new Log(writeCacheDir + "/fusecache.log");
-
-	cache_manager = new CacheManager(g_log);
-	if (!cache_manager->checkDependencies()) {
-		delete cache_manager;
-		return -1;
-	}
-
-	cache_manager->setRootPath(rootPath);
-	cache_manager->setReadCacheDir(readCacheDir);
-	cache_manager->setWriteCacheDir(writeCacheDir);
-	cache_manager->setMountPoint(mountPoint);
-	cache_manager->createDirectories();
-	cache_manager->start();
-
 	fuse_operations fc_oper {};
     assign_operations(fc_oper);
 
@@ -366,9 +343,31 @@ int main(int argc, char *argv[])
 	char *new_argv[MAX_ARGS];
 
 	umask(0);
+
+	std::string name;
 	
 	for (int i = 1; i < argc; ++i) {
-		if (strcmp(argv[i], "-ulimit") == 0 && (i+1 < argc)) {
+		if (strcmp(argv[i], "-name") == 0 && (i+1 < argc)) {
+			try
+			{
+				name = std::string(argv[i+1]);	
+			}
+			catch (...)
+			{
+				continue;
+			}
+		}
+		else if (strcmp(argv[i], "-readcacheonly") == 0) {
+			try
+			{
+				cache_manager->setReadCacheOnly(true);	
+			}
+			catch (...)
+			{
+				continue;
+			}
+		}
+		else if (strcmp(argv[i], "-ulimit") == 0 && (i+1 < argc)) {
 			try
 			{
 				std::string valueString(argv[i+1]);
@@ -393,6 +392,32 @@ int main(int argc, char *argv[])
 			}
 		}
 	}
+
+	char path[512];
+	getcwd(path, 512);
+
+	if (!name.empty()) {
+		name += "/" + name;
+	}
+	std::string rootPath = std::string(path) + name + "/orig";
+	std::string readCacheDir = std::string(path) + name + "/cache";
+	std::string writeCacheDir = std::string(path) + name + "/cache";
+	std::string mountPoint = std::string(path) + name + "/mnt";
+
+	g_log = new Log(writeCacheDir + "/fusecache.log");
+
+	cache_manager = new CacheManager(g_log);
+	if (!cache_manager->checkDependencies()) {
+		delete cache_manager;
+		return -1;
+	}
+
+	cache_manager->setRootPath(rootPath);
+	cache_manager->setReadCacheDir(readCacheDir);
+	cache_manager->setWriteCacheDir(writeCacheDir);
+	cache_manager->setMountPoint(mountPoint);
+	cache_manager->createDirectories();
+	cache_manager->start();
 
 	fill_dir_plus = FUSE_FILL_DIR_PLUS;
 	new_argv[0] = argv[0];

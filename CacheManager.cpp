@@ -230,7 +230,7 @@ bool CacheManager::needsCopy(const std::string& path)
 		float diff = difftime(sb_to.st_mtim.tv_sec, sb_from.st_mtim.tv_sec);
 		
 		// is origin file newer or has different file size
-		if (diff < 0 || (sb_from.st_size != sb_to.st_size)) {
+		if (diff != 0 || (sb_from.st_size != sb_to.st_size)) {
 			needs_copy = true;
 		} 
 
@@ -336,6 +336,7 @@ void CacheManager::run()
 		int maxDown = (int)(m_maxDownBandwidth * 1024.0f);
 		rsyncCommand += "--bwlimit=" + std::to_string(maxDown);
 	}
+	
 	rsyncCommand += " ";
 	rsyncCommand += "--exclude='*.part'";
 	rsyncCommand += " ";
@@ -360,7 +361,10 @@ void CacheManager::run()
 void CacheManager::start()
 {
     m_isRunning = true;
-    m_syncThread = std::thread(&CacheManager::run, this);
+
+	if (!m_readCacheOnly) {
+    	m_syncThread = std::thread(&CacheManager::run, this);
+	}
 }
 
 void CacheManager::stop()
@@ -463,7 +467,13 @@ std::string CacheManager::readCacheFilePath(const std::string& filePath)
 
 std::string CacheManager::writeCacheFilePath(const std::string& filePath)
 {
-    std::string newFilePath = m_writeCacheDir + filePath;
+	std::string newFilePath;
+	if (m_readCacheOnly) {
+    	newFilePath = m_rootPath + filePath;
+	}
+	else {
+		newFilePath = m_writeCacheDir + filePath;
+	}
     return newFilePath;
 }
 
@@ -511,6 +521,16 @@ void CacheManager::setWriteCacheDir(const std::string& writeCacheDir)
 void CacheManager::setMountPoint(const std::string& mountPoint)
 {
     m_mountPoint = mountPoint;
+}
+
+void CacheManager::setName(const std::string& name)
+{
+	m_name = name;
+}
+
+void CacheManager::setReadCacheOnly(bool enabled)
+{
+	m_readCacheOnly = enabled;
 }
 
 void CacheManager::setMaxUpBandwidth(float mbPerSecond)

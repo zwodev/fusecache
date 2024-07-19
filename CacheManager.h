@@ -59,6 +59,8 @@ public:
     void setReadCacheDir(const std::string& readCacheDir);
     void setWriteCacheDir(const std::string& writeCacheDir);
     void setMountPoint(const std::string& mountPoint);
+    void setName(const std::string& name);
+    void setReadCacheOnly(bool enabled);
     void setMaxUpBandwidth(float mbPerSecond);
     void setMaxDownBandwidth(float mbPerSecond);
 
@@ -66,6 +68,8 @@ private:
     Log* m_log = nullptr;
     std::mutex m_copyMutex;
     std::thread m_syncThread;
+    std::string m_name;
+    bool m_readCacheOnly = false;
     bool m_isRunning = false;
     bool m_isCopying= false;
     float m_maxUpBandwidth = 1.0f;
