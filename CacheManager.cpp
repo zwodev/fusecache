@@ -16,6 +16,7 @@
 #include <unistd.h>
 #include <algorithm>
 #include <filesystem>
+#include <array>
 
 #include "Helper.h"
 #include "CacheManager.h"
