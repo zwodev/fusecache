@@ -8,13 +8,13 @@ This software has been developed for use with the render management software [Ro
 WARNING: This tool is currently WIP and should not be used in production yet.
 
 ## Clone Repository
-``` git clone https://github.com/zwodev/fusecache.git ```
+``` git clone https://github.com/zwodev/fusecache.git```
 
 ## Install Dependencies
 ``` sudo apt install libfuse3-3 libfuse3-dev pkgconf build-essential```
 
 ## Compiling
-``` g++ -Wall fusecache.c CacheManager.cpp `pkg-config fuse3 --cflags --libs` -o fusecache ```
+``` g++ -Wall fusecache.c CacheManager.cpp `pkg-config fuse3 --cflags --libs` -o fusecache```
 
 ## Directory Structure
 fusecache creates 3 sub-directories when run the first time:
@@ -57,5 +57,5 @@ sudo ./script/install-fusecache-smb.sh
 ```
 ### Run precache script
 ```
-./precache.sh
+./precache.sh <path>
 ```
