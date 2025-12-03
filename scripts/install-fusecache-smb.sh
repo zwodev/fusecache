@@ -48,7 +48,7 @@ echo "password=$pass" | sudo tee -a "$credentials_file"
 sudo chmod 600 "$credentials_file"
 
 # Add permanent mount entry to fstab if not already present
-fstab_entry="$orig_share $orig_path cifs credentials=$credentials_file,cache=none,uid=$(id -u "$user"),gid=$(id -g "$user"),file_mode=0777,dir_mode=0777,_netdev,nofail 0 0"
+fstab_entry="$orig_share $orig_path cifs credentials=$credentials_file,cache=none,noperm,uid=$(id -u "$user"),gid=$(id -g "$user"),file_mode=0777,dir_mode=0777,_netdev,nofail 0 0"
 fstab="/etc/fstab"
 
 if ! grep -q "$orig_path" "$fstab"; then
