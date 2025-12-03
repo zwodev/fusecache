@@ -32,8 +32,8 @@ This directory contains the read and write file caches.
 ``` ./fusecache -ulimit 2.4 -dlimit 5.7 ```
 
 You can specify limits to prevent bandwidth exhaustion:
-* -ulimit (upload bandwidth limit)
-* -dlimit (specifies the download bandwidth limit)
+* -ulimit (upload bandwidth limit in MB/sec)
+* -dlimit (specifies the download bandwidth limit MB/sec)
 
 ## Setup with SMB
 ### Configure install-fusecache-smb.sh
@@ -50,8 +50,8 @@ pass="<pass>"
 orig_share="//<host>/<share>"
 orig_path="<orig_path>"
 mnt_path="<mnt_path>"
-upload_limit="3.0"
-download_limit="5.0"
+upload_limit="<upload_limit_in_mb_per_sec>"
+download_limit="<download_limit_in_mb_per_sec>"
 ```
 ### Run install-fusecache-smb.sh
 ```
