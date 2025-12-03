@@ -50,6 +50,8 @@ pass="<pass>"
 orig_share="//<host>/<share>"
 orig_path="<orig_path>"
 mnt_path="<mnt_path>"
+upload_limit="3.0"
+download_limit="5.0"
 ```
 ### Run install-fusecache-smb.sh
 ```
