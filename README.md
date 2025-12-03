@@ -7,6 +7,9 @@ This software has been developed for use with the render management software [Ro
 
 WARNING: This tool is currently WIP and should not be used in production yet.
 
+## Clone Repository
+git clone https://github.com/zwodev/fusecache.git
+
 ## Install Dependencies
 ``` sudo apt install libfuse3-3 libfuse3-dev pkgconf build-essential```
 
@@ -31,3 +34,28 @@ This directory contains the read and write file caches.
 You can specify limits to prevent bandwidth exhaustion:
 * -ulimit (upload bandwidth limit)
 * -dlimit (specifies the download bandwidth limit)
+
+## Setup with SMB
+### Configure install-fusecache-smb.sh
+```
+chmod +x script/install-fusecache-smb.sh
+nano scripts/install-fusecache-smb.sh
+
+# Adjust variables at the top of the script file
+
+# Configuration - Set defaults here
+ENABLE_FUSECACHE_AUTOSTART=true
+user="<user>"
+pass="<pass>"
+orig_share="//<host>/<share>"
+orig_path="<orig_path>"
+mnt_path="<mnt_path>"
+```
+### Run install-fusecache-smb.sh
+```
+sudo ./script/install-fusecache-smb.sh
+```
+### Run precache script
+```
+./precache.sh
+```
