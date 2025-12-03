@@ -8,7 +8,7 @@ This software has been developed for use with the render management software [Ro
 WARNING: This tool is currently WIP and should not be used in production yet.
 
 ## Clone Repository
-git clone https://github.com/zwodev/fusecache.git
+``` git clone https://github.com/zwodev/fusecache.git ```
 
 ## Install Dependencies
 ``` sudo apt install libfuse3-3 libfuse3-dev pkgconf build-essential```
